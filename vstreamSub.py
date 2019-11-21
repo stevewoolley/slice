@@ -48,20 +48,13 @@ def restart():
         server.supervisor.restart()
     except Exception as e:
         logging.error(e)
+        time.sleep(3)
     status()
 
 
 def reloadConfig():
     try:
         server.supervisor.reloadConfig()
-    except Exception as e:
-        logging.error(e)
-    status()
-
-
-def shutdown():
-    try:
-        server.supervisor.shutdown()
     except Exception as e:
         logging.error(e)
     status()
@@ -80,9 +73,6 @@ def subscriptionCallback(client, userdata, message):
         restart()
     elif params[0] == 'reloadConfig' and len(params) == 1:
         reloadConfig()
-    elif params[0] == 'shutdown' and len(params) == 1:
-        shutdown()
-
 
 
 if __name__ == "__main__":
