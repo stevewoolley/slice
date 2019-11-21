@@ -18,8 +18,6 @@ class Supervised:
     def status(self):
         try:
             process = self._server.supervisor.getProcessInfo(self.process)
-            logging.info('a: {}'.format(process))
-            logging.info('b: {}'.format(process['statename']))
             if 'statename' in process:
                 return process['statename']
             else:
