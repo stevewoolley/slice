@@ -7,7 +7,6 @@ import logging
 import time
 import platform
 from iot import topic_parser, iot_thing_topic, iot_payload
-
 from xmlrpc.client import ServerProxy
 
 AllowedActions = ['both', 'publish', 'subscribe']
@@ -15,26 +14,75 @@ LOG_FORMAT = '%(asctime)s %(filename)-15s %(funcName)-15s %(levelname)-8s %(mess
 
 
 def status():
-    processes = server.supervisor.getAllProcessInfo()
-    procs = {}
-    for s in processes:
-        procs[s['name']] = s['statename']
-    logger.info("supervised: {}".format(processes))
     try:
-        myAWSIoTMQTTClient.publish(
-            iot_thing_topic(args.thing),
-            iot_payload('reported', procs), 0)
-    except (AWSIoTPythonSDK.exception.AWSIoTExceptions.publishTimeoutException,
-            AWSIoTPythonSDK.exception.AWSIoTExceptions.subscribeTimeoutException):
-        logger.warning("callback publish timeout")
+        processes = server.supervisor.getAllProcessInfo()
+        procs = {}
+        for s in processes:
+            procs[s['name']] = s['statename']
+        logger.info("supervised: {}".format(processes))
+        myAWSIoTMQTTClient.publish(iot_thing_topic(args.thing), iot_payload('reported', procs), 0)
+    except AWSIoTPythonSDK.exception.AWSIoTExceptions.publishTimeoutException:
+        logger.warning("publish timeout")
+    except Exception as e:
+        logger.error(e)
+
+
+def start(process):
+    try:
+        server.supervisor.startProcess(process)
+    except Exception as e:
+        logging.error("{} {}".format(process, e))
+    status()
+
+
+def stop(process):
+    try:
+        server.supervisor.stopProcess(process)
+    except Exception as e:
+        logging.error("{} {}".format(process, e))
+    status()
+
+
+def restart():
+    try:
+        server.supervisor.restart()
+    except Exception as e:
+        logging.error(e)
+    status()
+
+
+def reloadConfig():
+    try:
+        server.supervisor.reloadConfig()
+    except Exception as e:
+        logging.error(e)
+    status()
+
+
+def shutdown():
+    try:
+        server.supervisor.shutdown()
+    except Exception as e:
+        logging.error(e)
+    status()
 
 
 def subscriptionCallback(client, userdata, message):
     logger.info("{} {}".format(message.topic, message.payload))
     params = topic_parser(args.topic, message.topic)
-    logger.debug("{}".format(params))
     if params[0] == 'status' and len(params) == 1:
         status()
+    elif params[0] == 'start' and len(params) == 2:
+        start(params[1])
+    elif params[0] == 'stop' and len(params) == 2:
+        stop(params[1])
+    elif params[0] == 'restart' and len(params) == 1:
+        restart()
+    elif params[0] == 'reloadConfig' and len(params) == 1:
+        reloadConfig()
+    elif params[0] == 'shutdown' and len(params) == 1:
+        shutdown()
+
 
 
 if __name__ == "__main__":
