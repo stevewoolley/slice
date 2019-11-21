@@ -1,78 +1,43 @@
 #!/usr/bin/env python
 
 from AWSIoTPythonSDK.MQTTLib import AWSIoTMQTTClient
-import AWSIoTPythonSDK.exception.AWSIoTExceptions
+# import AWSIoTPythonSDK.exception.AWSIoTExceptions
 import argparse
 import logging
 import time
 import platform
 from iot import topic_parser, iot_thing_topic, iot_payload
-from xmlrpc.client import ServerProxy
+import supervised
 
 AllowedActions = ['both', 'publish', 'subscribe']
 LOG_FORMAT = '%(asctime)s %(filename)-15s %(funcName)-15s %(levelname)-8s %(message)s'
 
 
-def status():
-    try:
-        processes = server.supervisor.getAllProcessInfo()
-        procs = {}
-        for s in processes:
-            procs[s['name']] = s['statename']
-        logger.info("supervised: {}".format(processes))
-        myAWSIoTMQTTClient.publish(iot_thing_topic(args.thingName), iot_payload('reported', procs), 0)
-    except AWSIoTPythonSDK.exception.AWSIoTExceptions.publishTimeoutException:
-        logger.warning("publish timeout")
-    except Exception as e:
-        logger.error(e)
-
-
-def start(process):
-    try:
-        server.supervisor.startProcess(process)
-    except Exception as e:
-        logging.error("{} {}".format(process, e))
-    status()
-
-
-def stop(process):
-    try:
-        server.supervisor.stopProcess(process)
-    except Exception as e:
-        logging.error("{} {}".format(process, e))
-    status()
-
-
-def restart():
-    try:
-        server.supervisor.restart()
-    except Exception as e:
-        logging.error(e)
-        time.sleep(3)
-    status()
-
-
-def reloadConfig():
-    try:
-        server.supervisor.reloadConfig()
-    except Exception as e:
-        logging.error(e)
-    status()
+# def status():
+#     try:
+#         processes = server.supervisor.getAllProcessInfo()
+#         procs = {}
+#         for s in processes:
+#             procs[s['name']] = s['statename']
+#         logger.info("supervised: {}".format(processes))
+#         myAWSIoTMQTTClient.publish(iot_thing_topic(args.thingName), iot_payload('reported', procs), 0)
+#     except AWSIoTPythonSDK.exception.AWSIoTExceptions.publishTimeoutException:
+#         logger.warning("publish timeout")
+#     except Exception as e:
+#         logger.error(e)
 
 
 def subscriptionCallback(client, userdata, message):
     logger.info("{} {}".format(message.topic, message.payload))
     params = topic_parser(args.topic, message.topic)
+    supervisor = supervised.Supervised('vstream')
     if params[0] == 'status' and len(params) == 1:
-        status()
-    elif params[0] == 'start' and len(params) == 2:
-        start(params[1])
-    elif params[0] == 'stop' and len(params) == 2:
-        stop(params[1])
-    elif params[0] == 'restart' and len(params) == 1:
-        restart()
-    elif params[0] == 'reloadConfig' and len(params) == 1:
-        reloadConfig()
+        myAWSIoTMQTTClient.publish(iot_thing_topic(args.thingName),
+                                   iot_payload('reported', {'status', supervisor.status()}), 0)
+    elif params[0] == 'start' and len(params) == 1:
+        supervisor.start()
+    elif params[0] == 'stop' and len(params) == 1:
+        supervisor.stop()
 
 
 if __name__ == "__main__":
@@ -121,7 +86,6 @@ if __name__ == "__main__":
     logger.addHandler(streamHandler)
 
     # supervisor rpc
-    server = ServerProxy('http://localhost:9001/RPC2')
 
     # Init AWSIoTMQTTClient
     myAWSIoTMQTTClient = None
