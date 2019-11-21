@@ -33,9 +33,9 @@ def subscriptionCallback(client, userdata, message):
     supervisor = supervised.Supervised('vstream')
     if params[0] == 'status' and len(params) == 1:
         logger.info("1: {}".format({'status', supervisor.status()}))
-        logger.info("2: {}".format(iot_payload('reported', {'status', supervisor.status()})))
+        logger.info("2: {}".format(iot_payload('reported', {'status': supervisor.status()})))
         myAWSIoTMQTTClient.publish(iot_thing_topic(args.thingName),
-                                   iot_payload('reported', {'status', supervisor.status()}), 0)
+                                   iot_payload('reported', {'status': supervisor.status()}), 0)
     elif params[0] == 'start' and len(params) == 1:
         supervisor.start()
     elif params[0] == 'stop' and len(params) == 1:
