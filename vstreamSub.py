@@ -13,27 +13,14 @@ AllowedActions = ['both', 'publish', 'subscribe']
 LOG_FORMAT = '%(asctime)s %(filename)-15s %(funcName)-15s %(levelname)-8s %(message)s'
 
 
-# def status():
-#     try:
-#         processes = server.supervisor.getAllProcessInfo()
-#         procs = {}
-#         for s in processes:
-#             procs[s['name']] = s['statename']
-#         logger.info("supervised: {}".format(processes))
-#         myAWSIoTMQTTClient.publish(iot_thing_topic(args.thingName), iot_payload('reported', procs), 0)
-#     except AWSIoTPythonSDK.exception.AWSIoTExceptions.publishTimeoutException:
-#         logger.warning("publish timeout")
-#     except Exception as e:
-#         logger.error(e)
-
-
 def subscriptionCallback(client, userdata, message):
     logger.info("{} {}".format(message.topic, message.payload))
     params = topic_parser(args.topic, message.topic)
     supervisor = supervised.Supervised(args.service)
     if params[0] == 'status' and len(params) == 1:
-        myAWSIoTMQTTClient.publish(iot_thing_topic(args.thingName),
-                                   iot_payload('reported', {supervisor.process: supervisor.status()}), 0)
+        myAWSIoTMQTTClient.publish(
+            iot_thing_topic(args.thingName),
+            iot_payload('reported', {supervisor.process: supervisor.status()}), 0)
     elif params[0] == 'start' and len(params) == 1:
         supervisor.start()
     elif params[0] == 'stop' and len(params) == 1:
