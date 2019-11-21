@@ -23,16 +23,16 @@ class Supervised:
             else:
                 return None
         except Exception as e:
-            logging.error("{} {}".format(self.process, e))
+            self._logger.error("{} {}".format(self.process, e))
 
     def start(self):
         try:
             self._server.supervisor.startProcess(self.process)
         except Exception as e:
-            logging.error("{} {}".format(self.process, e))
+            self._logger.error("{} {}".format(self.process, e))
 
     def stop(self):
         try:
             self._server.supervisor.stopProcess(self.process)
         except Exception as e:
-            logging.error("{} {}".format(self.process, e))
+            self._logger.error("{} {}".format(self.process, e))
