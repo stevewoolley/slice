@@ -30,10 +30,10 @@ LOG_FORMAT = '%(asctime)s %(filename)-15s %(funcName)-15s %(levelname)-8s %(mess
 def subscriptionCallback(client, userdata, message):
     logger.info("{} {}".format(message.topic, message.payload))
     params = topic_parser(args.topic, message.topic)
-    supervisor = supervised.Supervised('vstream')
+    supervisor = supervised.Supervised(args.service)
     if params[0] == 'status' and len(params) == 1:
         myAWSIoTMQTTClient.publish(iot_thing_topic(args.thingName),
-                                   iot_payload('reported', {'status': supervisor.status()}), 0)
+                                   iot_payload('reported', {supervisor.process: supervisor.status()}), 0)
     elif params[0] == 'start' and len(params) == 1:
         supervisor.start()
     elif params[0] == 'stop' and len(params) == 1:
@@ -56,6 +56,7 @@ if __name__ == "__main__":
     parser.add_argument("-m", "--mode", action="store", dest="mode", default="both",
                         help="Operation modes: %s" % str(AllowedActions))
     parser.add_argument("-t", "--topic", action="store", dest="topic", default="sdk/test/Python", help="Targeted topic")
+    parser.add_argument("-s", "--service", action="store", dest="service", default="vstream", help="Service name")
     parser.add_argument("-n", "--thingName", action="store", dest="thingName", default=platform.node().split('.')[0],
                         help="Targeted thing name")
     args = parser.parse_args()
