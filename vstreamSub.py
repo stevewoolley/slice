@@ -20,7 +20,7 @@ def status():
         for s in processes:
             procs[s['name']] = s['statename']
         logger.info("supervised: {}".format(processes))
-        myAWSIoTMQTTClient.publish(iot_thing_topic(args.thing), iot_payload('reported', procs), 0)
+        myAWSIoTMQTTClient.publish(iot_thing_topic(args.thingName), iot_payload('reported', procs), 0)
     except AWSIoTPythonSDK.exception.AWSIoTExceptions.publishTimeoutException:
         logger.warning("publish timeout")
     except Exception as e:
