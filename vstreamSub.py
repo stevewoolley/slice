@@ -21,9 +21,7 @@ def publish(key, value, state='reported', qos=0):
 def subscriptionCallback(client, userdata, message):
     logger.info("{} {}".format(message.topic, message.payload))
     params = topic_parser(args.topic, message.topic)
-    if params[0] == 'status' and len(params) == 1:
-        publish(supervisor.process, supervisor.status())
-    elif params[0] == 'start' and len(params) == 1:
+    if params[0] == 'start' and len(params) == 1:
         supervisor.start()
     elif params[0] == 'stop' and len(params) == 1:
         supervisor.stop()
