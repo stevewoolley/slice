@@ -6,21 +6,23 @@ import argparse
 import logging
 import time
 import platform
-from iot import topic_parser, iot_thing_topic, iot_payload
+from iot import topic_parser, iot_thing_topic, iot_payload, LOG_FORMAT
 import supervised
 
 AllowedActions = ['both', 'publish', 'subscribe']
-LOG_FORMAT = '%(asctime)s %(filename)-15s %(funcName)-15s %(levelname)-8s %(message)s'
+
+
+def publish(key, value, state='reported', qos=0):
+    myAWSIoTMQTTClient.publish(
+        iot_thing_topic(args.thingName),
+        iot_payload(state, {key: value}), qos)
 
 
 def subscriptionCallback(client, userdata, message):
     logger.info("{} {}".format(message.topic, message.payload))
     params = topic_parser(args.topic, message.topic)
-    supervisor = supervised.Supervised(args.service)
     if params[0] == 'status' and len(params) == 1:
-        myAWSIoTMQTTClient.publish(
-            iot_thing_topic(args.thingName),
-            iot_payload('reported', {supervisor.process: supervisor.status()}), 0)
+        publish(supervisor.process, supervisor.status())
     elif params[0] == 'start' and len(params) == 1:
         supervisor.start()
     elif params[0] == 'stop' and len(params) == 1:
@@ -69,11 +71,13 @@ if __name__ == "__main__":
 
     # Configure logging
     logging.basicConfig(level=logging.INFO, format=LOG_FORMAT)
-    logger = logging.getLogger('vstreamSub')
+    logger = logging.getLogger(args.service)
     streamHandler = logging.StreamHandler()
     logger.addHandler(streamHandler)
 
     # supervisor rpc
+    supervisor = supervised.Supervised(args.service)
+    state = supervisor.status()
 
     # Init AWSIoTMQTTClient
     myAWSIoTMQTTClient = None
@@ -100,4 +104,9 @@ if __name__ == "__main__":
     time.sleep(2)  # give service time to subscribe
 
     while True:
-        time.sleep(1)
+        time.sleep(10)
+        current_state = supervisor.status()
+        if state != current_state:  # change detected
+            state = current_state
+            publish(supervisor.process, current_state)
+            time.sleep(5)
