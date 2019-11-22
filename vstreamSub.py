@@ -3,10 +3,9 @@
 from AWSIoTPythonSDK.MQTTLib import AWSIoTMQTTClient
 # import AWSIoTPythonSDK.exception.AWSIoTExceptions
 import argparse
-import logging
 import time
 import platform
-from iot import topic_parser, iot_thing_topic, iot_payload, LOG_FORMAT
+from iot import topic_parser, iot_thing_topic, iot_payload
 import supervised
 
 AllowedActions = ['both', 'publish', 'subscribe']
@@ -19,7 +18,6 @@ def publish(key, value, state='reported', qos=0):
 
 
 def subscriptionCallback(client, userdata, message):
-    logger.info("{} {}".format(message.topic, message.payload))
     params = topic_parser(args.topic, message.topic)
     if params[0] == 'start' and len(params) == 1:
         supervisor.start()
@@ -66,12 +64,6 @@ if __name__ == "__main__":
         port = 443
     if not args.useWebsocket and not args.port:  # When no port override for non-WebSocket, default to 8883
         port = 8883
-
-    # Configure logging
-    logging.basicConfig(level=logging.INFO, format=LOG_FORMAT)
-    logger = logging.getLogger(args.service)
-    streamHandler = logging.StreamHandler()
-    logger.addHandler(streamHandler)
 
     # supervisor rpc
     supervisor = supervised.Supervised(args.service)
