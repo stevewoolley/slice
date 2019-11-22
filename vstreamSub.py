@@ -99,7 +99,7 @@ if __name__ == "__main__":
     myAWSIoTMQTTClient.connect()
     if args.mode == 'both' or args.mode == 'subscribe':
         myAWSIoTMQTTClient.subscribe('{}/#'.format(args.topic), 1, subscriptionCallback)
-    time.sleep(2)  # give service time to subscribe
+        time.sleep(2)  # give service time to subscribe
 
     while True:
         time.sleep(10)
