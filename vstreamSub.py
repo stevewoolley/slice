@@ -93,10 +93,13 @@ if __name__ == "__main__":
         myAWSIoTMQTTClient.subscribe('{}/#'.format(args.topic), 1, subscriptionCallback)
         time.sleep(2)  # give service time to subscribe
 
+    count = 0
     while True:
-        time.sleep(10)
-        current_state = supervisor.status()
-        if state != current_state:  # change detected
-            state = current_state
-            publish(supervisor.process, current_state)
-            time.sleep(5)
+        count += 1
+        time.sleep(1)
+        if count % 20 == 0:
+            count = 0  # reset
+            current_state = supervisor.status()
+            if state != current_state:  # change detected
+                state = current_state
+                publish(supervisor.process, current_state)
