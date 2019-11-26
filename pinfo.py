@@ -74,6 +74,8 @@ if __name__ == "__main__":
                 family, address, netmask, broadcast, ptp = k
                 if family == 2:
                     properties[i] = address
+        if 'lo' in properties:
+            properties.pop('lo')
 
         properties["hostname"] = platform.node()
         myAWSIoTMQTTClient.publish(
