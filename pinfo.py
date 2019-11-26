@@ -1,26 +1,11 @@
 #!/usr/bin/env python
 
 from AWSIoTPythonSDK.MQTTLib import AWSIoTMQTTClient
-# import AWSIoTPythonSDK.exception.AWSIoTExceptions
 import argparse
-import time
 import platform
-from iot import topic_parser, iot_thing_topic, iot_payload, AllowedActions
 import supervised
-
-
-def publish(key, value, state='reported', qos=0):
-    myAWSIoTMQTTClient.publish(
-        iot_thing_topic(args.thingName),
-        iot_payload(state, {key: value}), qos)
-
-
-def subscriptionCallback(client, userdata, message):
-    params = topic_parser(args.topic, message.topic)
-    if params[0] == 'start' and len(params) == 1:
-        supervisor.start()
-    elif params[0] == 'stop' and len(params) == 1:
-        supervisor.stop()
+import psutil
+from iot import iot_thing_topic, iot_payload, AllowedActions
 
 
 if __name__ == "__main__":
@@ -39,7 +24,6 @@ if __name__ == "__main__":
     parser.add_argument("-m", "--mode", action="store", dest="mode", default="both",
                         help="Operation modes: %s" % str(AllowedActions))
     parser.add_argument("-t", "--topic", action="store", dest="topic", default="sdk/test/Python", help="Targeted topic")
-    parser.add_argument("-s", "--service", action="store", dest="service", default="vstream", help="Service name")
     parser.add_argument("-n", "--thingName", action="store", dest="thingName", default=platform.node().split('.')[0],
                         help="Targeted thing name")
     args = parser.parse_args()
@@ -87,17 +71,16 @@ if __name__ == "__main__":
 
     # Connect and subscribe to AWS IoT
     myAWSIoTMQTTClient.connect()
-    if args.mode == 'both' or args.mode == 'subscribe':
-        myAWSIoTMQTTClient.subscribe('{}/#'.format(args.topic), 1, subscriptionCallback)
-        time.sleep(2)  # give service time to subscribe
+    if args.mode == 'both' or args.mode == 'publish':
+        properties = {}
+        # find all network interfaces
+        for i in psutil.net_if_addrs():
+            for k in psutil.net_if_addrs()[i]:
+                family, address, netmask, broadcast, ptp = k
+                if family == 2:
+                    properties[i] = address
 
-    count = 0
-    while True:
-        count += 1
-        time.sleep(1)
-        if count % 20 == 0:
-            count = 0  # reset
-            current_state = supervisor.status()
-            if state != current_state:  # change detected
-                state = current_state
-                publish(supervisor.process, current_state)
+        properties["hostname"] = platform.node()
+        myAWSIoTMQTTClient.publish(
+            iot_thing_topic(args.thingName),
+            iot_payload('reported', properties), 1)

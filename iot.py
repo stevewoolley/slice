@@ -1,6 +1,7 @@
 import json
 
 LOG_FORMAT = '%(asctime)s %(filename)-15s %(funcName)-15s %(levelname)-8s %(message)s'
+AllowedActions = ['both', 'publish', 'subscribe']
 
 
 def topic_parser(prefix, message_topic):
