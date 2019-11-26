@@ -7,7 +7,6 @@ import supervised
 import psutil
 from iot import iot_thing_topic, iot_payload, AllowedActions
 
-
 if __name__ == "__main__":
     # Read in command-line parameters
     parser = argparse.ArgumentParser()
@@ -46,10 +45,6 @@ if __name__ == "__main__":
         port = 443
     if not args.useWebsocket and not args.port:  # When no port override for non-WebSocket, default to 8883
         port = 8883
-
-    # supervisor rpc
-    supervisor = supervised.Supervised(args.service)
-    state = supervisor.status()
 
     # Init AWSIoTMQTTClient
     myAWSIoTMQTTClient = None
