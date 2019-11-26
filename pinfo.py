@@ -3,9 +3,24 @@
 from AWSIoTPythonSDK.MQTTLib import AWSIoTMQTTClient
 import argparse
 import platform
-import supervised
+import subprocess as sp
 import psutil
 from iot import iot_thing_topic, iot_payload, AllowedActions
+
+
+def os_execute(s):
+    """Returns string result of os call"""
+    try:
+        return sp.check_output(s.split()).rstrip('\n')
+    except Exception as ex:
+        return None
+
+
+def get_rpi_cpu_temperature():
+    """Returns raspberry pi cpu temperature in Centigrade"""
+    temp = os_execute('/opt/vc/bin/vcgencmd measure_temp')
+    return float(temp.split('=')[1].strip('\'C'))
+
 
 if __name__ == "__main__":
     # Read in command-line parameters
@@ -78,6 +93,17 @@ if __name__ == "__main__":
             properties.pop('lo')
 
         properties["hostname"] = platform.node()
+
+        mem = psutil.virtual_memory()
+        properties["megabytesMemoryFree"] = int(mem.available / (1024 * 1024))
+
+        disk = psutil.disk_usage('/')
+        properties["megabytesDiskUsed"] = int(disk.used / (1024 * 1024))
+
+        properties['percentCPUUtilization'] = psutil.cpu_percent(interval=3)
+
+        properties['cpuTemperature'] = get_rpi_cpu_temperature()
+
         myAWSIoTMQTTClient.publish(
             iot_thing_topic(args.thingName),
             iot_payload('reported', properties), 1)
