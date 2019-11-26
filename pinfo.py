@@ -11,7 +11,7 @@ from iot import iot_thing_topic, iot_payload, AllowedActions
 def os_execute(s):
     """Returns string result of os call"""
     try:
-        return sp.check_output(s.split()).rstrip('\n')
+        return sp.check_output(s.split()).decode('ASCII').rstrip('\n')
     except Exception as ex:
         return None
 
