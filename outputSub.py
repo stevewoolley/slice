@@ -2,8 +2,8 @@
 
 import logging
 import time
-import platform
 import argparse
+import platform
 from iot import topic_parser, AllowedActions, TOPIC_STATUS_OFF, TOPIC_STATUS_ON, TOPIC_STATUS_PULSE
 from AWSIoTPythonSDK.MQTTLib import AWSIoTMQTTClient
 from gpiozero import DigitalOutputDevice
