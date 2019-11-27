@@ -5,6 +5,7 @@ import argparse
 import platform
 import subprocess as sp
 import psutil
+import gpiozero
 from iot import iot_thing_topic, iot_payload, AllowedActions
 
 
@@ -103,6 +104,9 @@ if __name__ == "__main__":
         properties['percentCPUUtilization'] = psutil.cpu_percent(interval=3)
 
         properties['cpuTemperature'] = get_rpi_cpu_temperature()
+
+        properties["hardware"] = "Pi Model {} V{}".format(pi_info().model, pi_info().pcb_revision)
+
 
         myAWSIoTMQTTClient.publish(
             iot_thing_topic(args.thingName),
