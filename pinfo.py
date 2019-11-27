@@ -105,8 +105,11 @@ if __name__ == "__main__":
 
         properties['cpuTemperature'] = get_rpi_cpu_temperature()
 
-        properties["hardware"] = "Raspberry Pi Model {} V{}".format(gpiozero.pi_info().model, gpiozero.pi_info().pcb_revision)
+        properties["hardware"] = "Raspberry Pi Model {} V{}".format(gpiozero.pi_info().model,
+                                                                    gpiozero.pi_info().pcb_revision)
 
         myAWSIoTMQTTClient.publish(
             iot_thing_topic(args.thingName),
             iot_payload('reported', properties), 1)
+
+        myAWSIoTMQTTClient.disconnect()
