@@ -107,7 +107,6 @@ if __name__ == "__main__":
 
         properties["hardware"] = "Pi Model {} V{}".format(pi_info().model, pi_info().pcb_revision)
 
-
         myAWSIoTMQTTClient.publish(
             iot_thing_topic(args.thingName),
             iot_payload('reported', properties), 1)
