@@ -7,12 +7,13 @@ from signal import pause
 from AWSIoTPythonSDK.MQTTLib import AWSIoTMQTTClient
 from gpiozero import MotionSensor
 import logging
+import json
 
 
 def motion():
     logging.info('Motion')
     myAWSIoTMQTTClient.connect()
-    myAWSIoTMQTTClient.publish(args.topic, {'thing': args.thingName}, 1)
+    myAWSIoTMQTTClient.publish(args.topic, json.dumps({'thing': args.thingName}), 1)
     myAWSIoTMQTTClient.disconnect()
 
 
