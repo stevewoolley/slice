@@ -21,7 +21,9 @@ def device(cmd):
 
 def subscriptionCallback(client, user_data, message):
     params = topic_parser(args.topic, message.topic)
-    if params[0] in TOPIC_STATUS_PULSE and len(params) > 1:
+    if params[0] in TOPIC_STATUS_PULSE and len(params) == 1:
+        device(int(args.default))
+    elif params[0] in TOPIC_STATUS_PULSE and len(params) > 1:
         device(int(params[1]))
     elif params[0] in TOPIC_STATUS_ON:
         device(-1)
