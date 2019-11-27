@@ -20,12 +20,12 @@ def device(cmd):
 
 
 def subscriptionCallback(client, user_data, message):
-    cmd, arg, arg2 = topic_parser(args.topic, message.topic)
-    if cmd in TOPIC_STATUS_PULSE:
-        device(int(arg))
-    elif cmd in TOPIC_STATUS_ON:
+    params = topic_parser(args.topic, message.topic)
+    if params[0] in TOPIC_STATUS_PULSE and len(params) > 1:
+        device(int(params[1]))
+    elif params[0] in TOPIC_STATUS_ON:
         device(-1)
-    elif cmd in TOPIC_STATUS_OFF:
+    elif params[0] in TOPIC_STATUS_OFF:
         device(0)
     else:
         logging.warning('callback unrecognized command: {}'.format(cmd))
