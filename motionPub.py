@@ -12,9 +12,12 @@ import json
 
 def motion():
     logging.info('Motion')
-    myAWSIoTMQTTClient.connect()
-    myAWSIoTMQTTClient.publish(args.topic, json.dumps({'thing': args.thingName}), 1)
-    myAWSIoTMQTTClient.disconnect()
+    try:
+        myAWSIoTMQTTClient.connect()
+        myAWSIoTMQTTClient.publish(args.topic, json.dumps({'thing': args.thingName}), 0)
+        myAWSIoTMQTTClient.disconnect()
+    except Exception as err:
+        logging.warning('{}'.format(err))
 
 
 def no_motion():
