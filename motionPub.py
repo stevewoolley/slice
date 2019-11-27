@@ -1,19 +1,23 @@
 #!/usr/bin/env python
 
-from iot import AllowedActions
+from iot import AllowedActions, LOG_FORMAT
 import platform
 import argparse
 from signal import pause
 from AWSIoTPythonSDK.MQTTLib import AWSIoTMQTTClient
 from gpiozero import MotionSensor
+import logging
 
 
 def motion():
-    print('motion')
+    logging.info('Motion')
+    myAWSIoTMQTTClient.connect()
+    myAWSIoTMQTTClient.publish(args.topic, {'thing': args.thingName}, 1)
+    myAWSIoTMQTTClient.disconnect()
 
 
 def no_motion():
-    print('no motion')
+    logging.info('No Motion')
 
 
 if __name__ == "__main__":
@@ -47,10 +51,6 @@ if __name__ == "__main__":
                              "the sensor will be considered active by the is_active property, " +
                              "and all appropriate events will be fired",
                         type=float, default=0.5)
-    parser.add_argument("-s", "--shadow_var", help="Shadow variable", required=True)
-    parser.add_argument("-y", "--high_value", help="high value", default=1)
-    parser.add_argument("-z", "--low_value", help="low value", default=0)
-    parser.add_argument("-o", "--low_topic", nargs='*', help="Low topic")
     args = parser.parse_args()
 
     if args.mode not in AllowedActions:
@@ -71,6 +71,9 @@ if __name__ == "__main__":
         port = 443
     if not args.useWebsocket and not args.port:  # When no port override for non-WebSocket, default to 8883
         port = 8883
+
+    # Configure logging
+    logging.basicConfig(level=logging.INFO, format=LOG_FORMAT)
 
     # Init AWSIoTMQTTClient
     myAWSIoTMQTTClient = None
