@@ -35,7 +35,7 @@ if __name__ == "__main__":
     parser.add_argument("-p", "--port", action="store", dest="port", type=int, help="Port number override")
     parser.add_argument("-w", "--websocket", action="store_true", dest="useWebsocket", default=False,
                         help="Use MQTT over WebSocket")
-    parser.add_argument("-id", "--clientId", action="store", dest="clientId", default="vstreamSub",
+    parser.add_argument("-id", "--clientId", action="store", dest="clientId", default="",
                         help="Targeted client id")
     parser.add_argument("-m", "--mode", action="store", dest="mode", default="both",
                         help="Operation modes: %s" % str(AllowedActions))
