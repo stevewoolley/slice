@@ -16,11 +16,17 @@ def publish(key, value, state='reported', qos=0):
 
 
 def subscriptionCallback(client, userdata, message):
+    global countdown
     params = topic_parser(args.topic, message.topic)
-    if params[0] == 'start' and len(params) == 1:
+    if params[0] == 'start' and len(params) == 1 and supervisor.status() == 'STOPPED':
         supervisor.start()
-    elif params[0] == 'stop' and len(params) == 1:
+    elif params[0] == 'stop' and len(params) == 1 and supervisor.status() == 'RUNNING':
         supervisor.stop()
+    elif params[0] == 'pulse' and len(params) == 2:
+        if supervisor.status() == 'STOPPED':
+            supervisor.start()
+        if params[1].isdigit() and countdown < int(params[1]):
+            countdown = int(params[1])
 
 
 if __name__ == "__main__":
@@ -66,6 +72,7 @@ if __name__ == "__main__":
     # supervisor rpc
     supervisor = supervised.Supervised(args.service)
     state = supervisor.status()
+    countdown = 0
 
     # Init AWSIoTMQTTClient
     myAWSIoTMQTTClient = None
@@ -95,6 +102,11 @@ if __name__ == "__main__":
     while True:
         count += 1
         time.sleep(1)
+        if countdown == 1:
+            supervisor.stop()
+            countdown = 0
+        else:
+            countdown -= 1
         if count % 20 == 0:
             count = 0  # reset
             current_state = supervisor.status()
