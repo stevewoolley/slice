@@ -6,8 +6,8 @@ import platform
 import subprocess as sp
 import psutil
 import gpiozero
-from iot import iot_thing_topic, iot_payload, AllowedActions
-
+from iot import iot_thing_topic, iot_payload, AllowedActions, LOG_FORMAT
+import logging
 
 def os_execute(s):
     """Returns string result of os call"""
@@ -54,6 +54,9 @@ if __name__ == "__main__":
     if not args.useWebsocket and (not args.certificatePath or not args.privateKeyPath):
         parser.error("Missing credentials for authentication.")
         exit(2)
+
+    # Configure logging
+    logging.basicConfig(level=logging.WARN, format=LOG_FORMAT)
 
     # Port defaults
     port = args.port

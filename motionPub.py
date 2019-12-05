@@ -80,7 +80,7 @@ if __name__ == "__main__":
         port = 8883
 
     # Configure logging
-    logging.basicConfig(level=logging.INFO, format=LOG_FORMAT)
+    logging.basicConfig(level=logging.WARN, format=LOG_FORMAT)
 
     # Init AWSIoTMQTTClient
     myAWSIoTMQTTClient = None

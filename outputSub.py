@@ -4,7 +4,7 @@ import logging
 import time
 import argparse
 import platform
-from iot import topic_parser, AllowedActions, TOPIC_STATUS_OFF, TOPIC_STATUS_ON, TOPIC_STATUS_PULSE
+from iot import topic_parser, AllowedActions, TOPIC_STATUS_OFF, TOPIC_STATUS_ON, TOPIC_STATUS_PULSE, LOG_FORMAT
 from AWSIoTPythonSDK.MQTTLib import AWSIoTMQTTClient
 from gpiozero import DigitalOutputDevice
 
@@ -76,6 +76,9 @@ if __name__ == "__main__":
         port = 443
     if not args.useWebsocket and not args.port:  # When no port override for non-WebSocket, default to 8883
         port = 8883
+
+    # Configure logging
+    logging.basicConfig(level=logging.WARN, format=LOG_FORMAT)
 
     output = DigitalOutputDevice(args.pin)
 

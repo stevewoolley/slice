@@ -1,13 +1,12 @@
 #!/usr/bin/env python
 
 from AWSIoTPythonSDK.MQTTLib import AWSIoTMQTTClient
-# import AWSIoTPythonSDK.exception.AWSIoTExceptions
 import argparse
 import time
 import platform
-from iot import topic_parser, iot_thing_topic, iot_payload, AllowedActions
+from iot import topic_parser, iot_thing_topic, iot_payload, AllowedActions, LOG_FORMAT
 import supervised
-
+import logging
 
 def publish(key, value, state='reported', qos=0):
     myAWSIoTMQTTClient.publish(
@@ -68,6 +67,9 @@ if __name__ == "__main__":
         port = 443
     if not args.useWebsocket and not args.port:  # When no port override for non-WebSocket, default to 8883
         port = 8883
+
+    # Configure logging
+    logging.basicConfig(level=logging.WARN, format=LOG_FORMAT)
 
     # supervisor rpc
     supervisor = supervised.Supervised(args.service)
